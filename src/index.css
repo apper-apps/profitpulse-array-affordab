@@ -5,9 +5,8 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-white/10;
   }
-  
   body {
     @apply bg-surface-900 text-white font-sans antialiased;
   }
