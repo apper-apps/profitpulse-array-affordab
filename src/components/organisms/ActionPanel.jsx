@@ -112,12 +112,12 @@ const exportAsImage = () => {
         </div>
         <div>
           <h3 className="text-lg font-semibold text-white">Actions</h3>
-          <p className="text-sm text-gray-400">Export and save your results</p>
+<p className="text-sm text-gray-400">Export and save your results</p>
         </div>
       </div>
-</div>
 
       <div className="grid grid-cols-1 gap-3">
+        <Button 
           variant="secondary" 
           onClick={copyResults}
           className="justify-start"
