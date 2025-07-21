@@ -5,13 +5,21 @@ import CostBreakdown from "@/components/organisms/CostBreakdown";
 import RecentCalculations from "@/components/organisms/RecentCalculations";
 import ActionPanel from "@/components/organisms/ActionPanel";
 import Empty from "@/components/ui/Empty";
+import Card from "@/components/atoms/Card";
+import Button from "@/components/atoms/Button";
+import ApperIcon from "@/components/ApperIcon";
 
 const Calculator = () => {
   const [results, setResults] = useState(null);
+  const [calculationMode, setCalculationMode] = useState('standard');
+  const [bulkResults, setBulkResults] = useState([]);
 
   const handleCalculate = useCallback((calculationResults) => {
     setResults(calculationResults);
-  }, []);
+    if (calculationMode === 'bulk' && calculationResults) {
+      setBulkResults(prev => [...prev, { ...calculationResults, id: Date.now() }]);
+    }
+  }, [calculationMode]);
 
   const handleLoadCalculation = useCallback((calculationData) => {
     // This will trigger the form to load the data and recalculate
@@ -19,7 +27,44 @@ const Calculator = () => {
     window.location.reload(); // Simple approach for now
   }, []);
 
-  return (
+  const calculationModes = [
+    {
+      id: 'standard',
+      title: 'Standard Calculator',
+      description: 'Basic profit calculation',
+      icon: 'Calculator',
+      color: 'from-primary-600 to-primary-700'
+    },
+    {
+      id: 'reverse',
+      title: 'Reverse Calculation for Target Profit',
+      description: 'Calculate required selling price for desired profit',
+      icon: 'Target',
+      color: 'from-secondary-600 to-secondary-700'
+    },
+    {
+      id: 'visual',
+      title: 'Visual Charts for Cost Breakdown',
+      description: 'Interactive charts and visual analysis',
+      icon: 'PieChart',
+      color: 'from-accent-600 to-accent-700'
+    },
+    {
+      id: 'bulk',
+      title: 'Bulk Calculation Mode',
+      description: 'Calculate multiple products at once',
+      icon: 'Package2',
+      color: 'from-green-600 to-green-700'
+    },
+    {
+      id: 'breakeven',
+      title: 'Break-Even Analysis Visualization',
+      description: 'Investment and profit break-even analysis',
+      icon: 'TrendingUp',
+      color: 'from-orange-600 to-orange-700'
+    }
+  ];
+return (
     <div className="min-h-screen bg-surface-900 p-4 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
@@ -36,23 +81,67 @@ const Calculator = () => {
             </h1>
           </div>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Calculate accurate profit margins for your dropshipping business with all hidden costs included
+            Advanced dropshipping calculator with multiple calculation modes and visual analytics
           </p>
         </div>
 
-        {/* Main Content */}
+        {/* Feature Selection Panel */}
+        <Card className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg">
+              <ApperIcon name="Settings2" size={20} className="text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">Choose Calculation Mode</h3>
+              <p className="text-sm text-gray-400">Select the best calculation method for your needs</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {calculationModes.map((mode) => (
+              <Button
+                key={mode.id}
+                variant={calculationMode === mode.id ? "default" : "secondary"}
+                onClick={() => setCalculationMode(mode.id)}
+                className="h-auto p-4 flex-col items-start text-left space-y-2"
+              >
+                <div className="flex items-center gap-2 w-full">
+                  <div className={`p-1.5 bg-gradient-to-r ${mode.color} rounded`}>
+                    <ApperIcon name={mode.icon} size={16} className="text-white" />
+                  </div>
+                  <span className="font-medium text-sm">{mode.title}</span>
+                </div>
+                <p className="text-xs opacity-75 text-left">{mode.description}</p>
+              </Button>
+            ))}
+          </div>
+        </Card>
+
+{/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Calculator Form */}
           <div className="lg:col-span-2">
-            <CalculatorForm onCalculate={handleCalculate} />
+            <CalculatorForm 
+              onCalculate={handleCalculate} 
+              calculationMode={calculationMode}
+              bulkResults={bulkResults}
+              setBulkResults={setBulkResults}
+            />
           </div>
 
           {/* Right Column - Results */}
           <div className="space-y-6">
             {results ? (
               <>
-                <ProfitDisplay results={results} />
-                <ActionPanel results={results} />
+                <ProfitDisplay 
+                  results={results} 
+                  calculationMode={calculationMode}
+                />
+                <ActionPanel 
+                  results={results} 
+                  calculationMode={calculationMode}
+                  bulkResults={bulkResults}
+                />
               </>
             ) : (
               <Empty
@@ -64,12 +153,69 @@ const Calculator = () => {
           </div>
         </div>
 
-        {/* Bottom Section */}
+        {/* Bulk Results Summary */}
+        {calculationMode === 'bulk' && bulkResults.length > 0 && (
+          <Card className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-r from-green-600 to-green-700 rounded-lg">
+                  <ApperIcon name="Package2" size={20} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Bulk Calculation Summary</h3>
+                  <p className="text-sm text-gray-400">{bulkResults.length} products calculated</p>
+                </div>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setBulkResults([])}
+              >
+                <ApperIcon name="Trash2" size={16} className="mr-2" />
+                Clear All
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+              {bulkResults.map((result, index) => (
+                <div key={result.id} className="p-4 bg-white/5 rounded-lg border border-white/10">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-white">
+                        {result.calculations.productName || `Product ${index + 1}`}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setBulkResults(prev => prev.filter(r => r.id !== result.id))}
+                      >
+                        <ApperIcon name="X" size={12} />
+                      </Button>
+                    </div>
+                    <div className="text-sm text-gray-400">
+                      Profit: <span className={result.totalProfit >= 0 ? "text-accent-400" : "text-red-400"}>
+                        ₹{result.totalProfit.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Margin: {result.profitMargin.toFixed(1)}%
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+{/* Bottom Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Cost Breakdown */}
           <div>
             {results ? (
-              <CostBreakdown results={results} />
+              <CostBreakdown 
+                results={results} 
+                calculationMode={calculationMode}
+              />
             ) : (
               <Empty
                 title="Cost Breakdown"

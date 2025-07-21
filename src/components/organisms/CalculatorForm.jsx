@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import FormField from "@/components/molecules/FormField";
-import GSTSelector from "@/components/molecules/GSTSelector";
-import Button from "@/components/atoms/Button";
-import Card from "@/components/atoms/Card";
 import ApperIcon from "@/components/ApperIcon";
+import GSTSelector from "@/components/molecules/GSTSelector";
+import FormField from "@/components/molecules/FormField";
+import Card from "@/components/atoms/Card";
+import Button from "@/components/atoms/Button";
 
-const CalculatorForm = ({ onCalculate }) => {
-  const [formData, setFormData] = useState({
+const CalculatorForm = ({ onCalculate, calculationMode = 'standard', bulkResults, setBulkResults }) => {
+const [formData, setFormData] = useState({
     productName: "",
     productCost: "",
     deliveryCharges: "",
@@ -17,13 +17,71 @@ const CalculatorForm = ({ onCalculate }) => {
     sellingPrice: "",
     quantitySold: "1",
     otherFees: "",
+    targetProfit: "",
+    selectedPreset: ""
   });
+
+  const presetTemplates = {
+    electronics: {
+      name: "Electronics",
+      productCost: "2000",
+      deliveryCharges: "50",
+      paymentGatewayFees: "30",
+      advertisingCost: "100",
+      gstRate: 18,
+      otherFees: "25"
+    },
+    fashion: {
+      name: "Fashion & Clothing",
+      productCost: "500",
+      deliveryCharges: "40",
+      paymentGatewayFees: "20",
+      advertisingCost: "80",
+      gstRate: 12,
+      otherFees: "15"
+    },
+    home: {
+      name: "Home & Kitchen",
+      productCost: "800",
+      deliveryCharges: "60",
+      paymentGatewayFees: "25",
+      advertisingCost: "60",
+      gstRate: 18,
+      otherFees: "20"
+    },
+    beauty: {
+      name: "Beauty & Personal Care",
+      productCost: "300",
+      deliveryCharges: "35",
+      paymentGatewayFees: "15",
+      advertisingCost: "70",
+      gstRate: 18,
+      otherFees: "10"
+    }
+  };
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const handlePresetChange = (presetKey) => {
+    if (presetKey && presetTemplates[presetKey]) {
+      const preset = presetTemplates[presetKey];
+      setFormData(prev => ({
+        ...prev,
+        selectedPreset: presetKey,
+        productCost: preset.productCost,
+        deliveryCharges: preset.deliveryCharges,
+        paymentGatewayFees: preset.paymentGatewayFees,
+        advertisingCost: preset.advertisingCost,
+        gstRate: preset.gstRate,
+        otherFees: preset.otherFees
+      }));
+      toast.success(`Applied ${preset.name} template!`);
+    }
   };
 
   const handleClear = () => {
@@ -41,16 +99,32 @@ const CalculatorForm = ({ onCalculate }) => {
     toast.success("Form cleared successfully!");
   };
 
-  // Calculate results whenever form data changes
+// Calculate results whenever form data changes
   useEffect(() => {
     const productCost = parseFloat(formData.productCost) || 0;
     const deliveryCharges = parseFloat(formData.deliveryCharges) || 0;
     const paymentGatewayFees = parseFloat(formData.paymentGatewayFees) || 0;
     const advertisingCost = parseFloat(formData.advertisingCost) || 0;
     const gstRate = parseFloat(formData.gstRate) || 0;
-    const sellingPrice = parseFloat(formData.sellingPrice) || 0;
     const quantitySold = parseFloat(formData.quantitySold) || 1;
     const otherFees = parseFloat(formData.otherFees) || 0;
+    const targetProfit = parseFloat(formData.targetProfit) || 0;
+
+    let sellingPrice = parseFloat(formData.sellingPrice) || 0;
+
+    // Handle reverse calculation mode
+    if (calculationMode === 'reverse' && targetProfit > 0 && productCost > 0) {
+      const totalCostPerUnit = productCost + deliveryCharges + paymentGatewayFees + advertisingCost + otherFees;
+      const desiredProfitPerUnit = targetProfit / quantitySold;
+      const netSellingPriceRequired = totalCostPerUnit + desiredProfitPerUnit;
+      // Calculate selling price including GST
+      sellingPrice = netSellingPriceRequired / (1 - gstRate / 100);
+      
+      // Auto-update selling price field for reverse calculation
+      if (Math.abs(parseFloat(formData.sellingPrice) - sellingPrice) > 0.01) {
+        setFormData(prev => ({ ...prev, sellingPrice: sellingPrice.toFixed(2) }));
+      }
+    }
 
     if (productCost > 0 && sellingPrice > 0) {
       const totalCostPerUnit = productCost + deliveryCharges + paymentGatewayFees + advertisingCost + otherFees;
@@ -62,6 +136,10 @@ const CalculatorForm = ({ onCalculate }) => {
       const totalCost = totalCostPerUnit * quantitySold;
       const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
+      // Break-even analysis
+      const breakEvenUnits = profitPerUnit > 0 ? Math.ceil(totalCostPerUnit / profitPerUnit) : 0;
+      const breakEvenRevenue = breakEvenUnits * netSellingPrice;
+
       const results = {
         totalCost,
         gstAmount: gstAmount * quantitySold,
@@ -69,6 +147,8 @@ const CalculatorForm = ({ onCalculate }) => {
         totalProfit,
         profitMargin,
         perUnitProfit: profitPerUnit,
+        breakEvenUnits,
+        breakEvenRevenue,
         calculations: {
           ...formData,
           productCost,
@@ -79,14 +159,15 @@ const CalculatorForm = ({ onCalculate }) => {
           sellingPrice,
           quantitySold,
           otherFees,
+          targetProfit
         }
       };
 
       onCalculate(results);
     }
-  }, [formData, onCalculate]);
+  }, [formData, onCalculate, calculationMode]);
 
-  return (
+return (
     <Card className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -94,8 +175,20 @@ const CalculatorForm = ({ onCalculate }) => {
             <ApperIcon name="Calculator" size={20} className="text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-white">Dropshipping Calculator</h2>
-            <p className="text-sm text-gray-400">Enter your product details below</p>
+            <h2 className="text-xl font-semibold text-white">
+              {calculationMode === 'reverse' && 'Reverse Calculation Mode'}
+              {calculationMode === 'visual' && 'Visual Calculator Mode'}
+              {calculationMode === 'bulk' && 'Bulk Calculation Mode'}
+              {calculationMode === 'breakeven' && 'Break-Even Analysis Mode'}
+              {calculationMode === 'standard' && 'Dropshipping Calculator'}
+            </h2>
+            <p className="text-sm text-gray-400">
+              {calculationMode === 'reverse' && 'Set target profit to calculate required selling price'}
+              {calculationMode === 'visual' && 'Enhanced calculator with visual cost breakdown'}
+              {calculationMode === 'bulk' && 'Calculate multiple products efficiently'}
+              {calculationMode === 'breakeven' && 'Analyze break-even points and investment recovery'}
+              {calculationMode === 'standard' && 'Enter your product details below'}
+            </p>
           </div>
         </div>
         <Button variant="ghost" size="sm" onClick={handleClear}>
@@ -103,6 +196,31 @@ const CalculatorForm = ({ onCalculate }) => {
           Clear
         </Button>
       </div>
+
+      {/* Preset Templates */}
+      {(calculationMode === 'standard' || calculationMode === 'visual') && (
+        <div className="border-b border-white/10 pb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-1.5 bg-gradient-to-r from-purple-600 to-purple-700 rounded">
+              <ApperIcon name="Layers" size={16} className="text-white" />
+            </div>
+            <span className="text-sm font-medium text-white">Quick Start Templates</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {Object.entries(presetTemplates).map(([key, preset]) => (
+              <Button
+                key={key}
+                variant={formData.selectedPreset === key ? "default" : "secondary"}
+                size="sm"
+                onClick={() => handlePresetChange(key)}
+                className="text-xs"
+              >
+                {preset.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
@@ -172,17 +290,29 @@ const CalculatorForm = ({ onCalculate }) => {
           onChange={(value) => handleInputChange("gstRate", value)}
         />
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          label="Selling Price"
-          icon="Tag"
-          value={formData.sellingPrice}
-          onChange={(e) => handleInputChange("sellingPrice", e.target.value)}
-          placeholder="0.00"
-          prefix="₹"
-          tooltip="Price you charge to customers (including GST)"
-        />
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {calculationMode === 'reverse' ? (
+          <FormField
+            label="Target Profit"
+            icon="Target"
+            value={formData.targetProfit}
+            onChange={(e) => handleInputChange("targetProfit", e.target.value)}
+            placeholder="0.00"
+            prefix="₹"
+            tooltip="Desired total profit amount"
+          />
+        ) : (
+          <FormField
+            label="Selling Price"
+            icon="Tag"
+            value={formData.sellingPrice}
+            onChange={(e) => handleInputChange("sellingPrice", e.target.value)}
+            placeholder="0.00"
+            prefix="₹"
+            tooltip="Price you charge to customers (including GST)"
+            disabled={calculationMode === 'reverse'}
+          />
+        )}
 
         <FormField
           label="Quantity Sold"
@@ -193,6 +323,19 @@ const CalculatorForm = ({ onCalculate }) => {
           tooltip="Number of units sold"
         />
       </div>
+
+      {calculationMode === 'reverse' && formData.sellingPrice && (
+        <div className="bg-accent-500/10 border border-accent-500/20 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <ApperIcon name="Lightbulb" size={16} className="text-accent-400" />
+            <span className="text-sm font-medium text-white">Calculated Selling Price</span>
+          </div>
+          <p className="text-sm text-gray-300">
+            To achieve your target profit of ₹{formData.targetProfit}, 
+            set your selling price to <strong className="text-accent-400">₹{parseFloat(formData.sellingPrice).toFixed(2)}</strong>
+          </p>
+</div>
+      )}
     </Card>
   );
 };

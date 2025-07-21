@@ -1,9 +1,10 @@
 import { toast } from "react-toastify";
-import Button from "@/components/atoms/Button";
-import Card from "@/components/atoms/Card";
+import React from "react";
 import ApperIcon from "@/components/ApperIcon";
+import Card from "@/components/atoms/Card";
+import Button from "@/components/atoms/Button";
 
-const ActionPanel = ({ results }) => {
+const ActionPanel = ({ results, calculationMode = 'standard', bulkResults = [] }) => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -68,8 +69,39 @@ Generated with ProfitPulse 🚀
     }
   };
 
-  const exportAsImage = () => {
+const exportAsImage = () => {
     toast.info("Image export feature coming soon!");
+  };
+
+  const exportBulkData = () => {
+    if (bulkResults.length === 0) {
+      toast.error("No bulk data to export!");
+      return;
+    }
+
+    const csvData = bulkResults.map(result => ({
+      Product: result.calculations.productName || 'N/A',
+      'Selling Price': result.calculations.sellingPrice,
+      'Product Cost': result.calculations.productCost,
+      'Total Profit': result.totalProfit.toFixed(2),
+      'Profit Margin': result.profitMargin.toFixed(2) + '%',
+      'Per Unit Profit': result.perUnitProfit.toFixed(2)
+    }));
+
+    const csvString = [
+      Object.keys(csvData[0]).join(','),
+      ...csvData.map(row => Object.values(row).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'bulk-calculations.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    toast.success("Bulk data exported as CSV!");
   };
 
   return (
@@ -83,9 +115,9 @@ Generated with ProfitPulse 🚀
           <p className="text-sm text-gray-400">Export and save your results</p>
         </div>
       </div>
+</div>
 
       <div className="grid grid-cols-1 gap-3">
-        <Button 
           variant="secondary" 
           onClick={copyResults}
           className="justify-start"
@@ -102,6 +134,17 @@ Generated with ProfitPulse 🚀
           <ApperIcon name="Save" size={16} className="mr-2" />
           Save Calculation
         </Button>
+
+        {calculationMode === 'bulk' && bulkResults.length > 0 && (
+          <Button 
+            variant="secondary" 
+            onClick={exportBulkData}
+            className="justify-start"
+          >
+            <ApperIcon name="FileSpreadsheet" size={16} className="mr-2" />
+            Export Bulk CSV
+          </Button>
+        )}
         
         <Button 
           variant="secondary" 
