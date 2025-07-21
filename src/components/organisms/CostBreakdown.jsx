@@ -129,6 +129,200 @@ const totalCosts = costItems.reduce((sum, item) => sum + item.value, 0);
     }]
   };
 
+  // Break-even analysis chart configuration
+  const breakEvenChartOptions = {
+    chart: {
+      type: 'line',
+      background: 'transparent',
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+      },
+      zoom: {
+        enabled: true,
+        type: 'x'
+      }
+    },
+    colors: ['#10b981', '#ef4444', '#3b82f6'],
+    series: [
+      {
+        name: 'Total Revenue',
+        data: Array.from({length: Math.max(results.breakEvenUnits * 2, 10)}, (_, i) => {
+          const units = i + 1;
+          const revenuePerUnit = (calculations.sellingPrice - (calculations.sellingPrice * calculations.gstRate / 100));
+          return [units, units * revenuePerUnit];
+        }),
+        color: '#10b981'
+      },
+      {
+        name: 'Total Costs',
+        data: Array.from({length: Math.max(results.breakEvenUnits * 2, 10)}, (_, i) => {
+          const units = i + 1;
+          const costPerUnit = calculations.productCost + calculations.deliveryCharges + 
+                             calculations.paymentGatewayFees + calculations.advertisingCost + calculations.otherFees;
+          return [units, units * costPerUnit];
+        }),
+        color: '#ef4444'
+      }
+    ],
+    annotations: {
+      points: [{
+        x: results.breakEvenUnits,
+        y: results.breakEvenRevenue,
+        marker: {
+          size: 8,
+          fillColor: '#3b82f6',
+          strokeColor: '#ffffff',
+          strokeWidth: 2,
+          radius: 6,
+        },
+        label: {
+          text: `Break-Even Point\n${results.breakEvenUnits} units\n${formatCurrency(results.breakEvenRevenue)}`,
+          borderColor: '#3b82f6',
+          borderWidth: 1,
+          borderRadius: 6,
+          textAnchor: 'start',
+          offsetX: 10,
+          offsetY: -10,
+          style: {
+            background: '#1f2937',
+            color: '#ffffff',
+            fontSize: '12px',
+            fontWeight: 600,
+            padding: {
+              left: 8,
+              right: 8,
+              top: 4,
+              bottom: 4
+            }
+          }
+        }
+      }]
+    },
+    xaxis: {
+      title: {
+        text: 'Units Sold',
+        style: {
+          color: '#ffffff',
+          fontSize: '12px'
+        }
+      },
+      labels: {
+        style: {
+          colors: '#ffffff'
+        }
+      },
+      axisBorder: {
+        color: '#374151'
+      },
+      axisTicks: {
+        color: '#374151'
+      }
+    },
+    yaxis: {
+      title: {
+        text: 'Amount (₹)',
+        style: {
+          color: '#ffffff',
+          fontSize: '12px'
+        }
+      },
+      labels: {
+        style: {
+          colors: '#ffffff'
+        },
+        formatter: function(val) {
+          return formatCurrency(val);
+        }
+      },
+      axisBorder: {
+        color: '#374151'
+      }
+    },
+    legend: {
+      show: true,
+      position: 'top',
+      horizontalAlign: 'center',
+      labels: {
+        colors: '#ffffff',
+        useSeriesColors: true
+      },
+      itemMargin: {
+        horizontal: 15,
+        vertical: 5
+      }
+    },
+    grid: {
+      borderColor: '#374151',
+      strokeDashArray: 3
+    },
+    tooltip: {
+      enabled: true,
+      theme: 'dark',
+      style: {
+        fontSize: '12px'
+      },
+      x: {
+        formatter: function(val) {
+          return `${val} units`;
+        }
+      },
+      y: {
+        formatter: function(val) {
+          return formatCurrency(val);
+        }
+      }
+    },
+    stroke: {
+      width: 3,
+      curve: 'smooth'
+    },
+    markers: {
+      size: 0,
+      hover: {
+        size: 6
+      }
+    },
+    responsive: [{
+      breakpoint: 768,
+      options: {
+        chart: {
+          height: 300
+        },
+        legend: {
+          position: 'bottom'
+        },
+        annotations: {
+          points: [{
+            x: results.breakEvenUnits,
+            y: results.breakEvenRevenue,
+            marker: {
+              size: 6,
+              fillColor: '#3b82f6',
+              strokeColor: '#ffffff',
+              strokeWidth: 2,
+            },
+            label: {
+              text: `${results.breakEvenUnits} units`,
+              offsetX: 5,
+              offsetY: -5,
+              style: {
+                fontSize: '10px',
+                padding: {
+                  left: 4,
+                  right: 4,
+                  top: 2,
+                  bottom: 2
+                }
+              }
+            }
+          }]
+        }
+      }
+    }]
+  };
+
   return (
 <Card className="space-y-6">
       <div className="flex items-center justify-between">
@@ -144,7 +338,7 @@ const totalCosts = costItems.reduce((sum, item) => sum + item.value, 0);
           </div>
         </div>
         
-        {costItems.some(item => item.value > 0) && (
+{(costItems.some(item => item.value > 0) || calculationMode === 'breakeven') && (
           <div className="flex items-center gap-2">
             <Button
               variant={viewMode === 'table' ? 'default' : 'ghost'}
@@ -160,11 +354,60 @@ const totalCosts = costItems.reduce((sum, item) => sum + item.value, 0);
             >
               <ApperIcon name="PieChart" size={16} />
             </Button>
+            {calculationMode === 'breakeven' && (
+              <Button
+                variant={viewMode === 'breakeven' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('breakeven')}
+              >
+                <ApperIcon name="TrendingUp" size={16} />
+              </Button>
+            )}
           </div>
         )}
       </div>
 
-      {viewMode === 'chart' && costItems.some(item => item.value > 0) ? (
+{viewMode === 'breakeven' && calculationMode === 'breakeven' ? (
+        <div className="space-y-4">
+          <div className="bg-white/5 rounded-lg p-4">
+            <Chart
+              options={breakEvenChartOptions}
+              series={breakEvenChartOptions.series}
+              type="line"
+              height={400}
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gradient-to-r from-accent-500/10 to-accent-600/10 border border-accent-500/20 rounded-lg p-4 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <ApperIcon name="Target" size={16} className="text-accent-400" />
+                <span className="text-sm font-medium text-white">Break-Even Units</span>
+              </div>
+              <span className="text-2xl font-bold text-accent-400">
+                {results.breakEvenUnits}
+              </span>
+            </div>
+            <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/20 rounded-lg p-4 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <ApperIcon name="DollarSign" size={16} className="text-blue-400" />
+                <span className="text-sm font-medium text-white">Break-Even Revenue</span>
+              </div>
+              <span className="text-lg font-bold text-blue-400">
+                {formatCurrency(results.breakEvenRevenue)}
+              </span>
+            </div>
+            <div className="bg-gradient-to-r from-purple-500/10 to-purple-600/10 border border-purple-500/20 rounded-lg p-4 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <ApperIcon name="TrendingUp" size={16} className="text-purple-400" />
+                <span className="text-sm font-medium text-white">Profit Per Unit</span>
+              </div>
+              <span className="text-lg font-bold text-purple-400">
+                {formatCurrency(results.perUnitProfit)}
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : viewMode === 'chart' && costItems.some(item => item.value > 0) ? (
         <div className="space-y-4">
           <div className="bg-white/5 rounded-lg p-4">
             <Chart
@@ -176,8 +419,7 @@ const totalCosts = costItems.reduce((sum, item) => sum + item.value, 0);
           </div>
         </div>
       ) : (
-
-<div className="space-y-3">
+        <div className="space-y-3">
           {costItems.map((item, index) => (
             item.value > 0 && (
               <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-all duration-200">
