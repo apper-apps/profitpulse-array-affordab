@@ -14,22 +14,22 @@ const Contact = () => {
     });
   };
 
-  const contactMethods = [
+const contactMethods = [
     {
       title: "Helpline Number",
       subtitle: "Turant sampark karen",
-      value: "9876543210",
+      value: "9975280940",
       icon: "Phone",
-      action: "tel:9876543210",
+      action: "tel:9975280940",
       color: "from-green-600 to-green-700",
       description: "Direct call kar sakte hain"
     },
-    {
+{
       title: "Email Support", 
       subtitle: "Detailed queries ke liye",
-      value: "support@rlapnastore.com",
+      value: "rlapnastore7@gmail.com",
       icon: "Mail",
-      action: "mailto:support@rlapnastore.com",
+      action: "mailto:rlapnastore7@gmail.com",
       color: "from-blue-600 to-blue-700",
       description: "Email bhej kar sawal puchhen"
     },
@@ -133,12 +133,12 @@ const Contact = () => {
                 <ApperIcon name="Phone" size={24} className="text-white" />
               </div>
               <div>
-                <h4 className="font-semibold text-white mb-1">Helpline Number</h4>
+<h4 className="font-semibold text-white mb-1">Helpline Number</h4>
                 <a 
-                  href="tel:9876543210"
+                  href="tel:9975280940"
                   className="text-accent-400 hover:text-accent-300 transition-colors text-lg font-bold"
                 >
-                  9876543210
+                  9975280940
                 </a>
               </div>
             </div>
@@ -166,12 +166,12 @@ const Contact = () => {
                 <ApperIcon name="Mail" size={24} className="text-white" />
               </div>
               <div>
-                <h4 className="font-semibold text-white mb-1">Email Support</h4>
+<h4 className="font-semibold text-white mb-1">Email Support</h4>
                 <a 
-                  href="mailto:support@rlapnastore.com"
+                  href="mailto:rlapnastore7@gmail.com"
                   className="text-accent-400 hover:text-accent-300 transition-colors break-all"
                 >
-                  support@rlapnastore.com
+                  rlapnastore7@gmail.com
                 </a>
               </div>
             </div>
@@ -211,9 +211,9 @@ const Contact = () => {
             <h3 className="text-xl font-semibold text-white">Aapka apna</h3>
             <div className="space-y-2">
               <div className="text-2xl font-bold bg-gradient-to-r from-accent-400 to-accent-300 bg-clip-text text-transparent">
-                RL Apna Store
+RL Apna Store
               </div>
-              <p className="text-gray-400">(Owner: [Yahan Aapka Naam Daalen])</p>
+              <p className="text-gray-400">(Owner: Prem Patole)</p>
             </div>
             <p className="text-sm text-gray-500 max-w-md mx-auto">
               Aap apne mobile number, email ya naam change kar sakte hain—jo detail aap chahte hain, vahaan mention kar dijiyega.
