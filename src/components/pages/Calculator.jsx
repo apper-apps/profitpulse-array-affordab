@@ -65,7 +65,7 @@ const Calculator = () => {
     }
   ];
 return (
-    <div className="min-h-screen bg-surface-900 p-4 lg:p-8">
+    <div className="bg-surface-900 p-4 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
@@ -77,7 +77,7 @@ return (
               </svg>
             </div>
             <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-              ProfitPulse
+              RL Apna Store
             </h1>
           </div>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
@@ -231,11 +231,30 @@ return (
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="text-center py-8 border-t border-white/10">
-          <p className="text-gray-400">
-            Made for Indian dropshippers • GST compliant calculations
-          </p>
+{/* Footer */}
+        <div className="py-8 border-t border-white/10">
+          <div className="text-center space-y-4">
+            <p className="text-gray-400">
+              Made for Indian dropshippers • GST compliant calculations
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-gray-500">
+              <a href="tel:9876543210" className="flex items-center gap-2 hover:text-accent-400 transition-colors">
+                <ApperIcon name="Phone" size={16} />
+                <span>9876543210</span>
+              </a>
+              <a href="mailto:support@rlapnastore.com" className="flex items-center gap-2 hover:text-accent-400 transition-colors">
+                <ApperIcon name="Mail" size={16} />
+                <span>support@rlapnastore.com</span>
+              </a>
+              <span className="flex items-center gap-2">
+                <ApperIcon name="Clock" size={16} />
+                <span>9:00 AM - 9:00 PM</span>
+              </span>
+            </div>
+            <p className="text-xs text-gray-600">
+              Aapka apna: <span className="text-accent-400 font-medium">RL Apna Store</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
