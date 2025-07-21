@@ -222,7 +222,7 @@ return (
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           label="Product Name"
           icon="Package"
@@ -234,7 +234,7 @@ return (
         />
 
         <FormField
-          label="Product Cost"
+          label="Product Cost (base rate of the product)"
           icon="IndianRupee"
           value={formData.productCost}
           onChange={(e) => handleInputChange("productCost", e.target.value)}
@@ -244,7 +244,7 @@ return (
         />
 
         <FormField
-          label="Delivery Charges"
+          label="Delivery Charges (delivery charge)"
           icon="Truck"
           value={formData.deliveryCharges}
           onChange={(e) => handleInputChange("deliveryCharges", e.target.value)}
@@ -254,7 +254,7 @@ return (
         />
 
         <FormField
-          label="Payment Gateway Fees"
+          label="Payment Gateway Fees (payment fee, if any)"
           icon="CreditCard"
           value={formData.paymentGatewayFees}
           onChange={(e) => handleInputChange("paymentGatewayFees", e.target.value)}
@@ -264,7 +264,7 @@ return (
         />
 
         <FormField
-          label="Advertising Cost"
+          label="Advertising Cost (ad/platform cost for the product)"
           icon="Megaphone"
           value={formData.advertisingCost}
           onChange={(e) => handleInputChange("advertisingCost", e.target.value)}
@@ -274,7 +274,7 @@ return (
         />
 
         <FormField
-          label="Other Fees"
+          label="Other Charges (if any)"
           icon="FileText"
           value={formData.otherFees}
           onChange={(e) => handleInputChange("otherFees", e.target.value)}
@@ -303,7 +303,7 @@ return (
           />
         ) : (
           <FormField
-            label="Selling Price"
+            label="Selling Price (rate at which you are selling to the customer)"
             icon="Tag"
             value={formData.sellingPrice}
             onChange={(e) => handleInputChange("sellingPrice", e.target.value)}
@@ -315,7 +315,7 @@ return (
         )}
 
         <FormField
-          label="Quantity Sold"
+          label="Quantity Sold (how many units sold)"
           icon="Hash"
           value={formData.quantitySold}
           onChange={(e) => handleInputChange("quantitySold", e.target.value)}
