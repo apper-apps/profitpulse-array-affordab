@@ -143,10 +143,10 @@ return (
                   bulkResults={bulkResults}
                 />
               </>
-            ) : (
+) : (
               <Empty
-                title="Ready to Calculate"
-                description="Enter your product details on the left to see profit analysis here."
+                title="Abhi tak aapne koi calculation nahi ki है।"
+                description="Jaise hi aap product details भरेंगे और 'Calculate' पर क्लिक करेंगे, Yahan aapki latest profit aur cost calculations dikhengi. Calculation karne ke liye pehle apne product ki poori jaankari daalen."
                 icon="Calculator"
               />
             )}
